@@ -9,6 +9,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.twdata.objects.screen.PortType;
 import org.twdata.objects.screen.SectorDisplay;
 import org.twdata.objects.screen.SectorPrompt;
 import org.twdata.objects.screen.WarpDisplay;
@@ -19,6 +20,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -38,6 +40,12 @@ public class TestWarps
         assertEquals(4, tokenStream.size());
         assertTrue(tokenStream.get(0) instanceof SectorPrompt);
         assertTrue(tokenStream.get(1) instanceof SectorDisplay);
+        final SectorDisplay sectorDisplay = (SectorDisplay) tokenStream.get(1);
+        assertEquals(4310, sectorDisplay.getSectorId());
+        assertEquals(PortType.SBB, sectorDisplay.getPortType());
+        assertEquals(singletonList(2914), sectorDisplay.getWarps());
+        assertEquals(singletonList(2914), sectorDisplay.getWarps());
+
         assertTrue(tokenStream.get(2) instanceof WarpDisplay);
         assertTrue(tokenStream.get(3) instanceof SectorPrompt);
     }

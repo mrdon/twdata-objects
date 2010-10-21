@@ -6,6 +6,7 @@ import org.twdata.objects.screen.*;
 import static org.twdata.objects.VT100Writer.CharacterModifier.*;
 import static org.twdata.objects.Color.*;
 import org.slf4j.*;
+import static org.twdata.objects.TokenCreator.createToken;
 
 
 /**
@@ -59,15 +60,14 @@ NAME=([A-Za-z0-9"!""-"".""'"" ""*"])+
 
 "Command [TL="{TIME}"]:["{NUMBER}"]"  {
   yybegin(SECTOR_PROMPT);
-  return new SectorPrompt(yytext());
+  return createToken(SectorPrompt.class, yytext());
 }
 
 <SECTOR_PROMPT> "Warping to Sector " {NUMBER} {
-    return new WarpDisplay(yytext());
+    return createToken(WarpDisplay.class, yytext());
 }
 
 <SECTOR_PROMPT> "Sector  : " {NUMBER} {
-    log.warn("start sector screen");
     screenBuffer.append(yytext());
     yybegin(SECTOR_DISPLAY);
 }
@@ -76,7 +76,7 @@ NAME=([A-Za-z0-9"!""-"".""'"" ""*"])+
     yybegin(SECTOR_PROMPT);
     String data = screenBuffer.toString();
     screenBuffer.setLength(0);
-    return new SectorDisplay(data);
+    return createToken(SectorDisplay.class, data);
 }
 
 /* fallback */
