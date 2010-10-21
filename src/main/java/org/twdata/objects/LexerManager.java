@@ -12,56 +12,30 @@ import java.util.List;
 
 public class LexerManager
 {
-    private final LexingOutputStream lexer;
+    private final ScreenLexer lexer;
 
     private final EventPublisher eventPublisher;
 
-    public LexerManager(EventPublisher eventPublisher)
+    public LexerManager(EventPublisher eventPublisher, InputStream rawInput)
     {
         this.eventPublisher = eventPublisher;
-        lexer = new LexingOutputStream(eventPublisher);
+        lexer = new ScreenLexer(rawInput);
     }
 
-    public OutputStream getLexingOutputStream()
+    public void start()
     {
-        return lexer;
-    }
-    private static class LexingOutputStream extends OutputStream
-    {
-        private final ScreenLexer lexer;
-        private int lastState;
-        private final EventPublisher eventPublisher;
-
-        public LexingOutputStream(EventPublisher eventPublisher)
+        Object token = null;
+        try
         {
-            this.eventPublisher = eventPublisher;
-            lexer = new ScreenLexer(new StringReader(""));
-            lastState = lexer.yystate();
-        }
-
-        public void write(int i) throws IOException
-        {
-            lex(new ByteArrayInputStream(new byte[i]));
-
-        }
-
-        @Override
-        public void write(byte[] bytes, int pos, int len) throws IOException
-        {
-            lex(new ByteArrayInputStream(bytes, pos, len));
-        }
-
-        private void lex(ByteArrayInputStream in) throws IOException
-        {
-            lexer.append(new InputStreamReader(in), lastState);
-            Object token = null;
             while((token = lexer.yylex()) != null) {
-                System.out.println("token: " + token);
-                eventPublisher.publish(token);
-            }
-            lastState = lexer.yystate();
+                    System.out.println("token: " + token);
+                    eventPublisher.publish(token);
+                }
         }
-
-
+        catch (IOException e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
+
 }

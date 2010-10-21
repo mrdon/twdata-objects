@@ -13,10 +13,7 @@ import org.twdata.objects.screen.SectorDisplay;
 import org.twdata.objects.screen.SectorPrompt;
 import org.twdata.objects.screen.WarpDisplay;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -32,7 +29,6 @@ public class TestWarps
 {
     private OutputStream lexer;
     private LinkedList tokenStream;
-    private LexerManager lexerManager;
     private EventPublisher eventPublisher;
 
     @Test
@@ -45,23 +41,6 @@ public class TestWarps
         assertTrue(tokenStream.get(2) instanceof WarpDisplay);
         assertTrue(tokenStream.get(3) instanceof SectorPrompt);
     }
-    @Test
-    public void testTokenOverTwoFeeds() throws IOException, URISyntaxException
-    {
-        String data = "Command [TL=11:38:35]:[4310] (?=Help)? :\r\n";
-        lexer.write(data.getBytes());
-        assertEquals(1, tokenStream.size());
-        assertTrue(tokenStream.get(0) instanceof SectorPrompt);
-        tokenStream.clear();
-        lexer.write(data.getBytes());
-        assertEquals(1, tokenStream.size());
-        assertTrue(tokenStream.get(0) instanceof SectorPrompt);
-        tokenStream.clear();
-        lexer.write(data.substring(0, 10).getBytes());
-        lexer.write(data.substring(10).getBytes());
-        assertEquals(1, tokenStream.size());
-        assertTrue(tokenStream.get(0) instanceof SectorPrompt);
-    }
 
     private void writeStrippedLog(String file) throws IOException
     {
@@ -69,7 +48,8 @@ public class TestWarps
         final byte[] rawBytes = IOUtils.toByteArray(in);
         final byte[] strippedBytes = new byte[rawBytes.length];
         int strippedLen = stripAnsi(rawBytes, strippedBytes, rawBytes.length);
-        lexer.write(strippedBytes, 0, strippedLen);
+        LexerManager lexerManager = new LexerManager(eventPublisher, new ByteArrayInputStream(strippedBytes, 0, strippedLen));
+        lexerManager.start();
     }
 
 
@@ -85,8 +65,6 @@ public class TestWarps
             }
         });
         eventPublisher.register(this);
-        lexerManager = new LexerManager(eventPublisher);
-        lexer = lexerManager.getLexingOutputStream();
         tokenStream = new LinkedList();
 
     }
